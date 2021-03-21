@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<script src="https://www.gstatic.com/firebasejs/8.3.0/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.3.0/firebase-firestore.js"></script>
+	<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+	<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+	<script src="jquery.timeago.js" type="text/javascript"></script>
+	<script src="jquery.countdown.min.js" type="text/javascript"></script>
+	
+	<style type="text/css">
+		body {
+		 margin:0;
+		 font-family:"Neue Hans Kendrick",sans-serif;
+		 font-size:1rem;
+		 font-weight:400;
+		 line-height:1.5;
+		 color:#000;
+		 text-align:left;
+		 background-color:#fad46c;
+		 background-image: linear-gradient(#fad46c, #f6c086, #fad46c);
+		 background-image: linear-gradient(#f6c086, #fe9, #f6c086);
+		}
+		table {
+			color:#000;
+			background-color:#fff;
+			white-space: nowrap;
+			padding: 1rem;
+			border-collapse:collapse;
+		}
+		h1, h2, h3 {
+			margin: 0px;
+			padding: 0em;
+		}
+		.tlm {
+			color:#46c144;
+		}
+		#tableBorder {
+			width: 80%;
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+		    border: solid #46c144 10px;
+		    border-radius: 16px;
+		    -moz-border-radius: 16px;
+			overflow: auto;
+			background-color: #46c144;
+		}
+		.titleblock {
+			display: grid;
+			grid-template-columns: 132px auto;
+			width: 70%;
+			margin-left: auto;
+			margin-right: auto;
+			text-align:center;
+			margin-bottom: 0.5em;
+		}
+		.topStatsContainer {
+			width: 80%;
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr 1fr;
+			margin-left: auto;
+			margin-right: auto;
+		}
+		.topStats {
+			margin: 0em 1.5em;
+			padding: 0px;
+		    border: solid #46c144 10px;
+		    border-radius: 16px;
+		    -moz-border-radius: 16px;
+			background-color: #46c144;
+			text-align: center;
+			display: grid;
+			grid-template-rows: 1fr 2fr;
+		}
+		.topStats h2, h3 {
+			margin: 0px;
+			padding: 0px;
+		}
+		.topStats h3 {
+			color:#fff;
+		}
+		.topStats h2 {
+			background-color: #fff;
+			padding-top: 0.5em;
+			badding-bottom: 0.5em;
+		}
+		#unofficial {
+			transform: rotate(-15deg);
+			position: relative;
+			left: -4.5em;
+			top: 1em;
+			color: #d00;
+			font-size: 80%;
+		}
+		#disclaimer {
+		    margin: auto;
+		    width: 80%;
+			padding-top: 0.5em;
+			text-align: center;
+		}
+		#leaderBoardTitle {
+			padding: 0px;
+			margin: 0px;
+		}
+		#payme {
+		    margin: auto;
+			margin-top: 1em;
+			padding: 0.2em;
+			width: 75%;
+			line-height: 1.5em;
+			text-align: center;
+		    border: solid #46c144 5px;
+		    border-radius: 10px;
+		    -moz-border-radius: 10px;
+		}
+		#payme a {
+			text-decoration: none;
+			color: #000;
+		}
+		#clock {
+			font-size: 150%;
+			margin-top: 0.8em;
+		}
+		.rare {
+			color: #216ea2;
+		}
+		.epic {
+			color: #620068;
+		}
+		.legendary {
+			color: #906400;
+		}
+		.mythical {
+			color: #8d1e1e;
+		}
+		
+		
+	</style>
+	
+	<script>
+		// Initialize Cloud Firestore through Firebase
+		firebase.initializeApp({
+		  apiKey: 'AIzaSyB0sXO1j_Y3Lt9rwwJK80bfI0SSZL1onzg',
+		  authDomain: 'digitalpostma-68771.firebaseapp.com',
+		  projectId: 'digitalpostma-68771'
+		});
+
+		var db = firebase.firestore();
+		
+		var db_name = 'mushroom1';
+		
+		var event = [];
+		
+		function loadEventDetails (event) {
+			
+			startTime = new Date(event.start_time+'Z');
+			endTime = new Date(event.end_time+'Z');
+			
+			$(document).ready(function() {
+				$('#event_name').text(event.name);
+				$('#location_info').text(event.location_info);
+				$('#time_info').text(event.time_info);
+				$('#land_img').attr('src', event.land_img);
+							
+				if (startTime > new Date()) {
+					countdownMsg = "starts";
+					countdownTime = startTime;
+				} else {
+					countdownTime = endTime;
+					countdownMsg = "ends";
+				}
+			
+				$('div#clock').countdown(countdownTime, {elapse: true}).on('update.countdown', function(event) {
+					if (event.elapsed) {
+						if (endTime > new Date()) {
+							countdownMsg = 'ends'
+							$('div#clock').countdown(endTime);
+					  	} else {
+							$(this).html(event.strftime('Event Finished!'));
+							$('div#clock').countdown('stop');
+						}
+			      	} else if (event.offset.totalSeconds < 120) {
+			        	$(this).html(event.strftime('Event ' + countdownMsg + ' in %T seconds'));
+				    } else if (event.offset.totalHours < 1) {
+				        $(this).html(event.strftime('Event ' + countdownMsg + ' in %-M minutes'));
+					} else if (event.offset.totalHours < 2) {
+					  	$(this).html(event.strftime('Event ' + countdownMsg + ' in %-H hour %-M minutes'));
+				    } else {
+				      	$(this).html(event.strftime('Event ' + countdownMsg + ' in %-I hours %-M minutes'));
+				    }
+				  });
+			});
+		}
+		
+		
+		db.collection(db_name).doc('details').get().then((doc) => {
+		    if (doc.exists) {
+		        loadEventDetails(doc.data());
+		    }
+		}).catch((error) => {
+		    console.log("Error getting event data:", error);
+		});
+
+		(function (factory) {
+		  if (typeof define === 'function' && define.amd) {
+		    define(['jquery'], factory);
+		  } else if (typeof module === 'object' && typeof module.exports === 'object') {
+		    factory(require('jquery'));
+		  } else {
+		    factory(jQuery);
+		  }
+		}(function (jQuery) {
+		  // English shortened
+		  jQuery.timeago.settings.strings = {
+		    prefixAgo: '',
+		    prefixFromNow: null,
+		    suffixAgo: 'ago',
+		    suffixFromNow: "",
+		    seconds: "< 1 min",
+		    minute: "1 min",
+		    minutes: "%d mins",
+		    hour: "1 hour",
+		    hours: "%d hours",
+		    day: "1 day",
+		    days: "%d days",
+		    month: "1 month",
+		    months: "%d montb",
+		    year: "1 year",
+		    years: "%d year",
+		    wordSeparator: " ",
+		    numbers: []
+		  };
+		}));
+		
+		$.fn.dataTable.ext.errMode = 'none';
+		
+	</script>
+</head>
+<body>
+	
+	
+	<div class="titleblock">
+		<div>
+			<img id="land_img" src="" width="132" height="185">
+		</div>
+		<div>
+			<h1 id="event_name">&nbsp;</h1>
+			<h3 id="location_info">Loading Data...</h3>
+			<h3 id="time_info">&nbsp;</h3>
+			<div id="clock"></div>
+		</div>
+	</div>
+	
+	<div class="topStatsContainer">
+		<div class="topStats"><h3>Total Miners</h3><h2 id="total_miners">&nbsp;</h2></div>
+		<div class="topStats"><h3>Mine Count</h3><h2 id="total_mine_count">&nbsp;</h2></div>
+		<div class="topStats"><h3>Total TLM</h3><h2 id="total_tlm">&nbsp;</h2></div>
+		<div class="topStats"><h3>Total NFTs</h3><h2 id="total_nfts">&nbsp;</h2></div>
+	</div>
+	
+	
+	<center><h2 id="leaderBoardTitle"><div id="unofficial">Unofficial<sup>*</sup></div> Leader Board</h2></center>
+	
+		<div id="tableBorder"><table id="mainTable" class="order-column hover row-border nowrap"></table></div>
+
+		<div id="disclaimer">* Live results should be accurate, but may not be perfect, official final results will be read from confirmed block-chain transactions after the event.</div>
+		<div id="payme">
+				This project developed for the cryptomonKey community by @digipedro,
+				if you like it please consider sending a little potassium my way!
+				Donate: 
+				<a href="https://creeper.banano.cc/explorer/account/ban_3d6pzryts53tzk1u87yobfcrcwuiq11hhpj7oo8mapnodpkroc7dkqq8z8hc/history">
+				ban_3d6pzryts53tzk1u87yobfcrcwuiq11hhpj7oo8mapnodpkroc7dkqq8z8hc
+				</a>
+		</div>
+			
+    <script>
+		var leader_data = [];
+		
+		db.collection(db_name).doc('leader_board').onSnapshot((doc) => {
+			leader_data = [];
+			for (const wallet in doc.data()) {
+				user_stats = doc.data()[wallet];
+				nft_html = user_stats.nft_count
+				if (!jQuery.isEmptyObject(user_stats.nft_rarity)) {
+					if ('Rare' in user_stats.nft_rarity)
+						nft_html += " <span title='" + user_stats.nft_rarity.Rare + " Rare' class='rare'>R</span>"
+					if ('Epic' in user_stats.nft_rarity)
+						nft_html += " <span title='" + user_stats.nft_rarity.Epic + " Epic' class='epic'>E</span>"
+					if ('Legendary' in user_stats.nft_rarity)
+						nft_html += " <span title='" + user_stats.nft_rarity.Legendary + " Legendary' class='legendary'>L</span>"
+					if ('Mythical' in user_stats.nft_rarity)
+						nft_html += " <span title='" + user_stats.nft_rarity.Mythical + " Mythical' class='mythical'>M</span"
+				} 
+		        leader_data.push({
+						'wallet' : wallet,
+						'discord_name' : user_stats.discord_name,
+						'mine_count' : user_stats.mine_count,
+						'total_tlm' : user_stats.total_tlm.toFixed(4),
+						'nft_count' : nft_html,
+						'last_mine' : "<time class='timeago' datetime='" + user_stats.last_mine + "Z'></time>"
+					});
+
+			}
+			leader_data.sort(function (a, b) {
+				return b.total_tlm - a.total_tlm;
+			});
+			
+			var total_miners = 0;
+			var total_mine_count = 0;
+			var total_tlm = 0;
+			var total_nfts = 0;
+			for (var i = 0; i < leader_data.length; i++) {
+			    leader_data[i].rank = i + 1;
+				total_mine_count += parseInt(leader_data[i].mine_count);
+				total_tlm += parseFloat(leader_data[i].total_tlm);
+				total_nfts += parseInt(leader_data[i].nft_count);
+				if (parseInt(leader_data[i].mine_count) > 0) {
+					total_miners++
+				}
+			}
+			
+			$('#total_miners').text(total_miners);
+			$('#total_nfts').text(total_nfts);
+			$('#total_tlm').text(total_tlm.toFixed(4));
+			$('#total_mine_count').text(total_mine_count);
+			
+			//console.log(leader_data);
+			
+			$(document).ready(function() {
+				leader_table.rows().remove();
+				leader_table.rows.add(leader_data);
+				leader_table.rows().invalidate().draw();
+				jQuery("time.timeago").timeago();
+			});
+	    });
+		
+
+		$(document).ready(function() {
+		    leader_table = $('#mainTable').DataTable( {
+		        data: leader_data,
+				'paging': false,
+				'info': false,
+		        columns: [
+		            { title: "", data: "rank"},
+		            { title: "Wax", data: "wallet" },
+		            { title: "Discord", data:"discord_name" },
+		            { title: "Mine Count", data: "mine_count", className: 'dt-center' },
+		            { title: "TLM", data: "total_tlm", className: 'dt-center', class: 'tlm' },
+		            { title: "NFTs", data: "nft_count", className: 'dt-center' },
+					{ title: "Last Mine", data: "last_mine" }
+		        ]
+		    } );
+		});
+    </script>
+  </body>
+<body>
+</html>
