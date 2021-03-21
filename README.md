@@ -4,7 +4,7 @@ This is a simple leaderboard webpage for cryptomonKey mining events on Alien Wor
 
 ## Live Webpage
 
-http://digipedro.github.io/
+https://digipedro.github.io/aw_leaderboard/
 
 ## References
 
