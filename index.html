@@ -150,20 +150,23 @@
 	
 	<script>
 		// Initialize Cloud Firestore through Firebase
-		firebase.initializeApp({
-		  apiKey: 'AIzaSyB0sXO1j_Y3Lt9rwwJK80bfI0SSZL1onzg',
-		  authDomain: 'digitalpostma-68771.firebaseapp.com',
-		  projectId: 'digitalpostma-68771'
-		});
+		firebase.initializeApp({ projectId: 'digitalpostma-68771' });
 
 		var db = firebase.firestore();
-		
-		var db_name = 'mushroom1';
-		
+		var db_name = '';
 		var event = [];
+		var leader_data = [];
 		
+		// Parse URL to get event name
+		var queries = window.location.search.replace(/^\?/, '').split('&'), split;
+		for( var i = 0; i < queries.length; i++ ) {
+			split = queries[i].split('=');
+			if (split[0] === 'event') {
+				db_name = split[1]
+			}
+		}
+
 		function loadEventDetails (event) {
-			
 			startTime = new Date(event.start_time+'Z');
 			endTime = new Date(event.end_time+'Z');
 			
@@ -203,15 +206,89 @@
 			});
 		}
 		
-		
-		db.collection(db_name).doc('details').get().then((doc) => {
-		    if (doc.exists) {
-		        loadEventDetails(doc.data());
-		    }
-		}).catch((error) => {
-		    console.log("Error getting event data:", error);
-		});
+		function loadLeaderBoard() {
+			db.collection(db_name).doc('leader_board').onSnapshot((doc) => {
+				leader_data = [];
+				for (const wallet in doc.data()) {
+					user_stats = doc.data()[wallet];
+					nft_html = user_stats.nft_count
+					if (!jQuery.isEmptyObject(user_stats.nft_rarity)) {
+						if ('Rare' in user_stats.nft_rarity)
+							nft_html += " <span title='" + user_stats.nft_rarity.Rare + " Rare' class='rare'>R</span>"
+						if ('Epic' in user_stats.nft_rarity)
+							nft_html += " <span title='" + user_stats.nft_rarity.Epic + " Epic' class='epic'>E</span>"
+						if ('Legendary' in user_stats.nft_rarity)
+							nft_html += " <span title='" + user_stats.nft_rarity.Legendary + " Legendary' class='legendary'>L</span>"
+						if ('Mythical' in user_stats.nft_rarity)
+							nft_html += " <span title='" + user_stats.nft_rarity.Mythical + " Mythical' class='mythical'>M</span"
+					} 
+			        leader_data.push({
+							'wallet' : wallet,
+							'discord_name' : user_stats.discord_name,
+							'mine_count' : user_stats.mine_count,
+							'total_tlm' : user_stats.total_tlm.toFixed(4),
+							'nft_count' : nft_html,
+							'last_mine' : "<time class='timeago' datetime='" + user_stats.last_mine + "Z'>&nbsp;</time>"
+						});
 
+				}
+				leader_data.sort(function (a, b) {
+					return b.total_tlm - a.total_tlm;
+				});
+			
+				var total_miners = 0;
+				var total_mine_count = 0;
+				var total_tlm = 0;
+				var total_nfts = 0;
+				for (var i = 0; i < leader_data.length; i++) {
+				    leader_data[i].rank = i + 1;
+					total_mine_count += parseInt(leader_data[i].mine_count);
+					total_tlm += parseFloat(leader_data[i].total_tlm);
+					total_nfts += parseInt(leader_data[i].nft_count);
+					if (parseInt(leader_data[i].mine_count) > 0) {
+						total_miners++
+					}
+				}
+			
+				$('#total_miners').text(total_miners);
+				$('#total_nfts').text(total_nfts);
+				$('#total_tlm').text(total_tlm.toFixed(4));
+				$('#total_mine_count').text(total_mine_count);
+			
+				//console.log(leader_data);
+			
+				$(document).ready(function() {
+					leader_table.rows().remove();
+					leader_table.rows.add(leader_data);
+					leader_table.rows().invalidate().draw();
+					jQuery("time.timeago").timeago();
+				});
+		    });
+		}
+		
+		function queryEventDatabase () {
+			db.collection(db_name).doc('details').get().then((doc) => {
+			    if (doc.exists) {
+			        loadEventDetails(doc.data());
+					$(document).ready(function() { loadLeaderBoard(); });
+			    }
+			}).catch((error) => {
+			    console.log("Error getting event data:", error);
+			});
+		}
+		
+		if (!db_name) {
+			db.collection('default').doc('default').get().then((doc) => {
+			    db_name = doc.data().event_name;
+				queryEventDatabase();
+			}).catch((error) => {
+			    console.log("Error connecting to database:", error);
+			});
+		} else {
+			queryEventDatabase();
+		}
+
+        // Prefernces for jquery.timeago
 		(function (factory) {
 		  if (typeof define === 'function' && define.amd) {
 		    define(['jquery'], factory);
@@ -243,6 +320,7 @@
 		  };
 		}));
 		
+		// Preferences for jquery.dataTables
 		$.fn.dataTable.ext.errMode = 'none';
 		
 	    jQuery.extend( jQuery.fn.dataTableExt.oSort, {
@@ -295,67 +373,6 @@
 		</div>
 			
     <script>
-		var leader_data = [];
-		
-		db.collection(db_name).doc('leader_board').onSnapshot((doc) => {
-			leader_data = [];
-			for (const wallet in doc.data()) {
-				user_stats = doc.data()[wallet];
-				nft_html = user_stats.nft_count
-				if (!jQuery.isEmptyObject(user_stats.nft_rarity)) {
-					if ('Rare' in user_stats.nft_rarity)
-						nft_html += " <span title='" + user_stats.nft_rarity.Rare + " Rare' class='rare'>R</span>"
-					if ('Epic' in user_stats.nft_rarity)
-						nft_html += " <span title='" + user_stats.nft_rarity.Epic + " Epic' class='epic'>E</span>"
-					if ('Legendary' in user_stats.nft_rarity)
-						nft_html += " <span title='" + user_stats.nft_rarity.Legendary + " Legendary' class='legendary'>L</span>"
-					if ('Mythical' in user_stats.nft_rarity)
-						nft_html += " <span title='" + user_stats.nft_rarity.Mythical + " Mythical' class='mythical'>M</span"
-				} 
-		        leader_data.push({
-						'wallet' : wallet,
-						'discord_name' : user_stats.discord_name,
-						'mine_count' : user_stats.mine_count,
-						'total_tlm' : user_stats.total_tlm.toFixed(4),
-						'nft_count' : nft_html,
-						'last_mine' : "<time class='timeago' datetime='" + user_stats.last_mine + "Z'>&nbsp;</time>"
-					});
-
-			}
-			leader_data.sort(function (a, b) {
-				return b.total_tlm - a.total_tlm;
-			});
-			
-			var total_miners = 0;
-			var total_mine_count = 0;
-			var total_tlm = 0;
-			var total_nfts = 0;
-			for (var i = 0; i < leader_data.length; i++) {
-			    leader_data[i].rank = i + 1;
-				total_mine_count += parseInt(leader_data[i].mine_count);
-				total_tlm += parseFloat(leader_data[i].total_tlm);
-				total_nfts += parseInt(leader_data[i].nft_count);
-				if (parseInt(leader_data[i].mine_count) > 0) {
-					total_miners++
-				}
-			}
-			
-			$('#total_miners').text(total_miners);
-			$('#total_nfts').text(total_nfts);
-			$('#total_tlm').text(total_tlm.toFixed(4));
-			$('#total_mine_count').text(total_mine_count);
-			
-			//console.log(leader_data);
-			
-			$(document).ready(function() {
-				leader_table.rows().remove();
-				leader_table.rows.add(leader_data);
-				leader_table.rows().invalidate().draw();
-				jQuery("time.timeago").timeago();
-			});
-	    });
-		
-
 		$(document).ready(function() {
 		    leader_table = $('#mainTable').DataTable( {
 		        data: leader_data,
@@ -365,7 +382,7 @@
 		            { title: "", data: "rank"},
 		            { title: "Wax", data: "wallet" },
 		            { title: "Discord", data:"discord_name" },
-		            { title: "Mine Count", data: "mine_count", className: 'dt-center' },
+		            { title: "Mines", data: "mine_count", className: 'dt-center' },
 		            { title: "TLM", data: "total_tlm", className: 'dt-center', class: 'tlm' },
 		            { title: "NFTs", data: "nft_count", className: 'dt-center', sType: 'nft' },
 					{ title: "Last Mine", data: "last_mine", orderable: false }

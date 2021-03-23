@@ -34,7 +34,10 @@ db = firestore.client()
 
 doc_ref = db.collection(event_name).document('pending_contestants')
 pending_contestants = doc_ref.get().to_dict()
-pending_contestants.update(contestants)
+if pending_contestants:
+    pending_contestants.update(contestants)
+else:
+    pending_contestants = contestants
 doc_ref.set(pending_contestants)
 
 
