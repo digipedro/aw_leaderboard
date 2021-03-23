@@ -23,42 +23,47 @@
 		 color:#000;
 		 text-align:left;
 		 background-color:#fad46c;
-		 background-image: linear-gradient(#fad46c, #f6c086, #fad46c);
-		 background-image: linear-gradient(#f6c086, #fe9, #f6c086);
+		 background-image: linear-gradient(#fad46c, #f6c086, #fad46c, #f6c086);
 		}
 		table {
 			color:#000;
 			background-color:#fff;
-			white-space: nowrap;
-			padding: 1rem;
-			border-collapse:collapse;
 		}
 		h1, h2, h3 {
 			margin: 0px;
 			padding: 0em;
 		}
 		.tlm {
-			color:#46c144;
+			color:#20a333;
 		}
 		#tableBorder {
 			width: 80%;
 			display: block;
 			margin-left: auto;
 			margin-right: auto;
+			maring-top: 0px;
 		    border: solid #46c144 10px;
 		    border-radius: 16px;
 		    -moz-border-radius: 16px;
 			overflow: auto;
 			background-color: #46c144;
 		}
+		#mainTable_filter input  {
+			background-color: #66d164;
+		}
 		.titleblock {
 			display: grid;
-			grid-template-columns: 132px auto;
-			width: 70%;
+			grid-template-columns: 184px 1fr 184px;
+			width: 75%;
+			height: 220px;
 			margin-left: auto;
 			margin-right: auto;
 			text-align:center;
-			margin-bottom: 0.5em;
+			align-items: center;
+		}
+		.titleblock img {
+			margin: 0px;
+			padding: 0px;
 		}
 		.topStatsContainer {
 			width: 80%;
@@ -240,21 +245,32 @@
 		
 		$.fn.dataTable.ext.errMode = 'none';
 		
+	    jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+		    "nft-pre": function (x) {
+		        return parseInt(String(x).substring(0, 2));
+		    },
+		    "nft-asc": function ( a, b ) {
+		        return (a < b);
+		    },
+		    "nft-desc": function ( a, b ) {
+		        return (a > b);
+		    }
+		});
+		
 	</script>
 </head>
 <body>
 	
 	
 	<div class="titleblock">
-		<div>
-			<img id="land_img" src="" width="132" height="185">
-		</div>
+		<div><img src="MinerMonkey.png" width="170" height="220"></div>
 		<div>
 			<h1 id="event_name">&nbsp;</h1>
 			<h3 id="location_info">Loading Data...</h3>
 			<h3 id="time_info">&nbsp;</h3>
 			<div id="clock"></div>
 		</div>
+		<div><img src="AbacusMonkey.png" width="184" height="220"></div>
 	</div>
 	
 	<div class="topStatsContainer">
@@ -264,9 +280,8 @@
 		<div class="topStats"><h3>Total NFTs</h3><h2 id="total_nfts">&nbsp;</h2></div>
 	</div>
 	
-	
-	<center><h2 id="leaderBoardTitle"><div id="unofficial">Unofficial<sup>*</sup></div> Leader Board</h2></center>
-	
+<center><h2 id="leaderBoardTitle"><div id="unofficial">Unofficial<sup>*</sup></div> Leader Board</h2></center>
+
 		<div id="tableBorder"><table id="mainTable" class="order-column hover row-border nowrap"></table></div>
 
 		<div id="disclaimer">* Live results should be accurate, but may not be perfect, official final results will be read from confirmed block-chain transactions after the event.</div>
@@ -303,7 +318,7 @@
 						'mine_count' : user_stats.mine_count,
 						'total_tlm' : user_stats.total_tlm.toFixed(4),
 						'nft_count' : nft_html,
-						'last_mine' : "<time class='timeago' datetime='" + user_stats.last_mine + "Z'></time>"
+						'last_mine' : "<time class='timeago' datetime='" + user_stats.last_mine + "Z'>&nbsp;</time>"
 					});
 
 			}
@@ -352,8 +367,8 @@
 		            { title: "Discord", data:"discord_name" },
 		            { title: "Mine Count", data: "mine_count", className: 'dt-center' },
 		            { title: "TLM", data: "total_tlm", className: 'dt-center', class: 'tlm' },
-		            { title: "NFTs", data: "nft_count", className: 'dt-center' },
-					{ title: "Last Mine", data: "last_mine" }
+		            { title: "NFTs", data: "nft_count", className: 'dt-center', sType: 'nft' },
+					{ title: "Last Mine", data: "last_mine", orderable: false }
 		        ]
 		    } );
 		});
