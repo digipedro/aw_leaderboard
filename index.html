@@ -114,6 +114,9 @@
 			margin: 0px;
 		}
 		#payme {
+			display: block;
+			background-color: #eee;
+			height: 250px;
 		    margin: auto;
 			margin-top: 1em;
 			padding: 0.2em;
@@ -125,7 +128,6 @@
 		    -moz-border-radius: 10px;
 		}
 		#payme a {
-			text-decoration: none;
 			color: #000;
 		}
 		#clock {
@@ -150,11 +152,7 @@
 	
 	<script>
 		// Initialize Cloud Firestore through Firebase
-		firebase.initializeApp({
-			apiKey: 'AIzaSyC6QOZfhEGbJYu0Zi9RVhEnqMBXbFLMid8',
-			authDomain: 'digitalpostma-68771.firebaseapp.com',
-			projectId: 'digitalpostma-68771'
-		});
+		firebase.initializeApp({ projectId: 'digitalpostma-68771' });
 
 		var db = firebase.firestore();
 		var db_name = '';
@@ -368,12 +366,16 @@
 
 		<div id="disclaimer">* Live results should be accurate, but may not be perfect, official final results will be read from confirmed block-chain transactions after the event.</div>
 		<div id="payme">
-				This project developed for the cryptomonKey community by @digipedro,
+			<img src="qr_ban_18qaddi.png" style="float: right; margin-left: 2em" width="258" height="249">
+		    <img src="https://monkey.banano.cc/api/v1/monkey/ban_18qaddipzz9eyrxkkfhnt61w3uca4k6xt49o36t5rtdwsm1t7ckgq1a1rdst" style="float: left" height="249">
+				<br><br>
+				This project is run for the cryptomonKey community by @digipedro,
 				if you like it please consider sending a little potassium my way!
 				Donate: 
-				<a href="https://creeper.banano.cc/explorer/account/ban_3d6pzryts53tzk1u87yobfcrcwuiq11hhpj7oo8mapnodpkroc7dkqq8z8hc/history">
-				ban_3d6pzryts53tzk1u87yobfcrcwuiq11hhpj7oo8mapnodpkroc7dkqq8z8hc
-				</a>
+				
+				<a href="https://creeper.banano.cc/explorer/account/ban_18qaddipzz9eyrxkkfhnt61w3uca4k6xt49o36t5rtdwsm1t7ckgq1a1rdst/history">
+				ban_18qaddi...a1rdst
+				</a>		
 		</div>
 			
     <script>
