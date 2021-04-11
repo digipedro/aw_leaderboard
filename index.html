@@ -181,6 +181,7 @@
 
 		var db = firebase.firestore();
 		var db_name = '';
+		var highlight_wax = '';
 		var event = [];
 		var leader_data = [];
 		
@@ -189,7 +190,10 @@
 		for( var i = 0; i < queries.length; i++ ) {
 			split = queries[i].split('=');
 			if (split[0] === 'event') {
-				db_name = split[1]
+				db_name = split[1];
+			}
+			else if (split[0] === 'wax') {
+				highlight_wax = split[1];
 			}
 		}
 
@@ -305,8 +309,12 @@
 				var total_mine_count = 0;
 				var total_tlm = 0;
 				var total_nfts = 0;
+				var highlight_row = -1;
 				for (var i = 0; i < leader_data.length; i++) {
 				    leader_data[i].rank = i + 1;
+					if (highlight_wax != '' && highlight_wax == leader_data[i].wallet) {
+						highlight_row = i;
+					}
 					total_mine_count += parseInt(leader_data[i].mine_count);
 					total_tlm += parseFloat(leader_data[i].total_tlm);
 					total_nfts += parseInt(leader_data[i].nft_count);
@@ -326,12 +334,12 @@
 				$('#total_tlm').text(total_tlm.toFixed(4));
 				$('#total_mine_count').text(total_mine_count);
 			
-				//console.log(leader_data);
-			
 				$(document).ready(function() {
 					leader_table.rows().remove();
 					leader_table.rows.add(leader_data);
 					leader_table.rows().invalidate().draw();
+					if (highlight_row > -1)
+						$(leader_table.row( highlight_row ).nodes()).addClass( 'selected' );
 					jQuery("time.timeago").timeago();
 				});
 		    });
