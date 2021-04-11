@@ -137,6 +137,9 @@
 			font-size: 150%;
 			margin-top: 0.8em;
 		}
+		.common {
+			color: #444;
+		}
 		.rare {
 			color: #216ea2;
 		}
@@ -248,18 +251,41 @@
 		function loadLeaderBoard() {
 			db.collection(db_name).doc('leader_board').onSnapshot((doc) => {
 				leader_data = [];
+				total_nft_breakdown = {
+					Abundant : 0,
+					Common : 0,
+					Rare : 0,
+					Epic : 0,
+					Legendary : 0,
+					Mythical : 0,
+				};
 				for (const wallet in doc.data()) {
 					user_stats = doc.data()[wallet];
 					nft_html = user_stats.nft_count
 					if (!jQuery.isEmptyObject(user_stats.nft_rarity)) {
-						if ('Rare' in user_stats.nft_rarity)
-							nft_html += " <span title='" + user_stats.nft_rarity.Rare + " Rare' class='rare'>R</span>"
-						if ('Epic' in user_stats.nft_rarity)
-							nft_html += " <span title='" + user_stats.nft_rarity.Epic + " Epic' class='epic'>E</span>"
-						if ('Legendary' in user_stats.nft_rarity)
-							nft_html += " <span title='" + user_stats.nft_rarity.Legendary + " Legendary' class='legendary'>L</span>"
-						if ('Mythical' in user_stats.nft_rarity)
-							nft_html += " <span title='" + user_stats.nft_rarity.Mythical + " Mythical' class='mythical'>M</span"
+						if ('Abundant' in user_stats.nft_rarity) {
+							total_nft_breakdown.Abundant += user_stats.nft_rarity.Abundant;
+						}
+						if ('Common' in user_stats.nft_rarity) {
+							nft_html += " <span title='" + user_stats.nft_rarity.Common + " Common' class='common'>C</span>";
+							total_nft_breakdown.Common += user_stats.nft_rarity.Common;
+						}
+						if ('Rare' in user_stats.nft_rarity) {
+							nft_html += " <span title='" + user_stats.nft_rarity.Rare + " Rare' class='rare'>R</span>";
+							total_nft_breakdown.Rare += user_stats.nft_rarity.Rare;
+						}
+						if ('Epic' in user_stats.nft_rarity) {
+							nft_html += " <span title='" + user_stats.nft_rarity.Epic + " Epic' class='epic'>E</span>";
+							total_nft_breakdown.Epic += user_stats.nft_rarity.Epic;
+						}
+						if ('Legendary' in user_stats.nft_rarity) {
+							nft_html += " <span title='" + user_stats.nft_rarity.Legendary + " Legendary' class='legendary'>L</span>";
+							total_nft_breakdown.Legendary += user_stats.nft_rarity.Legendary;
+						}
+						if ('Mythical' in user_stats.nft_rarity) {
+							nft_html += " <span title='" + user_stats.nft_rarity.Mythical + " Mythical' class='mythical'>M</span";
+							total_nft_breakdown.Mythical += user_stats.nft_rarity.Mythical;
+						}
 					} 
 			        leader_data.push({
 							'wallet' : wallet,
@@ -291,6 +317,12 @@
 			
 				$('#total_miners').text(total_miners);
 				$('#total_nfts').text(total_nfts);
+				nft_summary = [];
+				for (const [type, value] of Object.entries(total_nft_breakdown)) {
+					if (value > 0)
+						nft_summary.push(value + ' ' + type)
+				}				
+				$('#total_nfts').attr('title', nft_summary.join(', '));
 				$('#total_tlm').text(total_tlm.toFixed(4));
 				$('#total_mine_count').text(total_mine_count);
 			
@@ -497,7 +529,7 @@
 		<div class="topStats"><h3>Total Miners</h3><h2 id="total_miners">&nbsp;</h2></div>
 		<div class="topStats"><h3>Mine Count</h3><h2 id="total_mine_count">&nbsp;</h2></div>
 		<div class="topStats"><h3>Total TLM</h3><h2 id="total_tlm">&nbsp;</h2></div>
-		<div class="topStats"><h3>Total NFTs</h3><h2 id="total_nfts">&nbsp;</h2></div>
+		<div class="topStats"><h3>Total NFTs</h3><h2 id="total_nfts" title="">&nbsp;</h2></div>
 	</div>
 	
 <center><h2 id="leaderBoardTitle"><div id="unofficial">Unofficial<sup>*</sup></div> Leader Board</h2></center>
